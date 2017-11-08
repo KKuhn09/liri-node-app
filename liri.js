@@ -83,10 +83,11 @@ if(process.argv[2] === "spotify-this-song"){
 	   		songTitle += nodeArgs[i];
 	  	}
 	}
-	//
+	//Query the Spotify API
 	spotify
 		.search({ type: 'track', query: songTitle, limit: 1 })
 		.then(function(response){
+			//Display track information
 			console.log("Artist: "+response.tracks.items[0].album.artists[0].name);
 			console.log("Song Title: "+response.tracks.items[0].name);
 			console.log("Preview Link: "+response.tracks.items[0].external_urls.spotify);
