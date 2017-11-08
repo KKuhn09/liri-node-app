@@ -2,12 +2,13 @@
 var request = require("request");
 //Include twitter package/keys
 var Twitter = require("twitter");
+//Keep twitterKeys private
 var twitterKeys = require("./keys.js");
 var client = new Twitter({
-  consumer_key: 'bIcexJ44OAS2UNpSfoMp5CNsy',
-  consumer_secret: 'eWrmkhkZKUTCDrTM2BwiNJeiBGujQTLkhCrzeIb7lJv6EHpzKV',
-  access_token_key: '899665576271982592-qIyoWafVuBLiUyvwjffLFAArAN4aAXT',
-  access_token_secret: 'sCFPc5SxLVA7aE9fClx4EkCIDwyXZpog6wlXdJzH1GvOL',
+  consumer_key: twitterKeys.twitterKeys.consumer_key,
+  consumer_secret: twitterKeys.twitterKeys.consumer_secret,
+  access_token_key: twitterKeys.twitterKeys.access_token_key,
+  access_token_secret: twitterKeys.twitterKeys.access_token_secret,
 });
 
 //If movie-this is the third argument on the command line
