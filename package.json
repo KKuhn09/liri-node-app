@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/KKuhn09/liri-node-app#readme",
   "dependencies": {
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "twitter": "^1.7.1"
   }
 }

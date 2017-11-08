@@ -1,9 +1,17 @@
 //Includes request npm package
 var request = require("request");
+//Include twitter package/keys
+var Twitter = require("twitter");
+var twitterKeys = require("./keys.js");
+var client = new Twitter({
+  consumer_key: 'bIcexJ44OAS2UNpSfoMp5CNsy',
+  consumer_secret: 'eWrmkhkZKUTCDrTM2BwiNJeiBGujQTLkhCrzeIb7lJv6EHpzKV',
+  access_token_key: '899665576271982592-qIyoWafVuBLiUyvwjffLFAArAN4aAXT',
+  access_token_secret: 'sCFPc5SxLVA7aE9fClx4EkCIDwyXZpog6wlXdJzH1GvOL',
+});
 
-//Checking for command line argument of movie-this
-//  which will run a query of OMDB's api
-if(process.argv[2] == "movie-this"){
+//If movie-this is the third argument on the command line
+if(process.argv[2] === "movie-this"){
 
 	//Stores arguments into array
 	var nodeArgs = process.argv;
@@ -24,8 +32,8 @@ if(process.argv[2] == "movie-this"){
 	//Creates a query URL based on movie name we just created
 	var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
 
-	//Using request package, will pull the .json response from the 
-	//  OMDB API URL we created 
+	//Using request package, pull the .json response from the 
+	//OMDB API URL we created 
 	request(queryUrl, function(error, response, body) {
 	  	// If the request is successful
 	  	if (!error && response.statusCode === 200) {
@@ -44,9 +52,15 @@ if(process.argv[2] == "movie-this"){
 	});
 }
 
-/*Need to figure out how to connect to Twitter API and Spotify API
-  The problem I ran into is figuring out how to utilize packages so
-  that any developer using/editing this program can use the 
-  npm install  command to install all of the needed packages.*/
-
-
+//If the third argument in command line is my-tweets
+if(process.argv[2] === "my-tweets"){
+	//Use the Twitter client to get tweets from my timeline
+	client.get("https://api.twitter.com/1.1/statuses/user_timeline.json", function(error, tweets, response) {
+		if(error) throw error;//if err show error message
+		//For each tweet
+  		for(var i=0;i<tweets.length;i++){
+  			//log the tweet
+  			console.log("Tweet "+(i+1)+": "+tweets[i].text)
+  		};  
+	});
+}
