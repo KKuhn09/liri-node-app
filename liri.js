@@ -1,6 +1,7 @@
 var request = require("request");//Includes request npm package
 var Twitter = require("twitter");//Include twitter package
 var Spotify = require("node-spotify-api");//Include spotify package
+const fs = require("fs");
 
 var twitterKeys = require("./keys.js");//Keep twitterKeys private
 //Create our Twitter client
@@ -69,23 +70,11 @@ if(process.argv[2] === "my-tweets"){
 	});
 }
 
-//If spotify-this-song is the third argument in command line
-if(process.argv[2] === "spotify-this-song"){
-	var songTitle = "";
-	//Starts a for loop that will patch the song title together with ' 's
-	for (var i = 3; i < nodeArgs.length; i++) {
-		//If there is more than one word in the song title
-		if (i > 3 && i < nodeArgs.length){
-			//Patch together song title
-			songTitle = songTitle + " " + nodeArgs[i];
-		}
-	  	else{
-	   		songTitle += nodeArgs[i];
-	  	}
-	}
+//spotifyThisSong function
+var spotifyThisSong = function(song){
 	//Query the Spotify API
 	spotify
-		.search({ type: 'track', query: songTitle, limit: 1 })
+		.search({ type: 'track', query: song, limit: 1 })
 		.then(function(response){
 			//Display track information
 			console.log("Artist: "+response.tracks.items[0].album.artists[0].name);
@@ -96,4 +85,49 @@ if(process.argv[2] === "spotify-this-song"){
 		.catch(function(err){
 			console.log(err);
 		});
+}
+
+//If spotify-this-song is the command
+if(nodeArgs[2] === "spotify-this-song"){
+	var songTitle = "";
+	//Starts a for loop that will patch the song title together with ' 's
+	for (var i = 3; i < nodeArgs.length; i++) {
+		//If there is more than one word in the song title
+		if (i > 3 && i < nodeArgs.length){
+			//Patch together song title
+			songTitle = songTitle + " " + nodeArgs[i];
+		}
+		else{
+		   	songTitle += nodeArgs[i];
+		}
+	}
+	spotifyThisSong(songTitle); //Spotify the song
+}
+
+//If do-what-it-says is the command
+if(nodeArgs[2] === "do-what-it-says"){
+	//Use file system to read random.txt
+	fs.readFile("random.txt", "utf8", function(error, data){
+		var commands = data.split(",");//Split the commands from the .txt files
+		var command = commands[0]; //The first item in array is the command
+		commands = commands[1].split(" "); //Split the second command if more than 1 word
+		var query = commands[0];
+		console.log(commands);
+		for(var i=1;i<commands.length;i++){
+			query = query+"+"+commands[i];
+		}
+		//Remove quotations
+		query = query.replace("\"", "");
+		query = query.replace("\"", "");
+		console.log(query);
+		//checks the command and executes the appropriate function
+		switch(command){
+			case "spotify-this-song":
+				console.log(query);
+				spotifyThisSong(query);
+				break;
+			default:
+				console.log("LIRI doesn't know that");
+		}
+	});
 }
