@@ -9,21 +9,42 @@ var client = new Twitter({
   consumer_key: twitterKeys.twitterKeys.consumer_key,
   consumer_secret: twitterKeys.twitterKeys.consumer_secret,
   access_token_key: twitterKeys.twitterKeys.access_token_key,
-  access_token_secret: twitterKeys.twitterKeys.access_token_secret,
+  access_token_secret: twitterKeys.twitterKeys.access_token_secret
 });
 //Create the Spotify client
 var spotify = new Spotify({
-  id: "7084abeda56d4bcb9b19cf6aa1e640c4",
+  id: "7084abeda56d4bcb9b19cf6aa1e640c4", 
   secret: "4911edbea69e4c989dae8b52fbe9581b"
 });
-
+//Store process.argv for easy access
 var nodeArgs = process.argv;
-//If movie-this is the third argument on the command line
-if(nodeArgs[2] === "movie-this"){
 
+//movieThis function
+var movieThis = function(movieName){
+	//Creates a query URL based on movie name we just created
+	var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
+	//Using request package, pull the .json response from the OMDB API URL we created 
+	request(queryUrl, function(error, response, body) {
+		// If the request is successful
+		if (!error && response.statusCode === 200) {
+		  	console.log("<----------------------------------->");
+		    console.log("Movie Title: " + JSON.parse(body).Title);
+		    console.log("Year Released: " + JSON.parse(body).Year);
+		    console.log("IMDB Rating: " + JSON.parse(body).imdbRating);
+		    //Need to query the array within database to get rotten tomatoes rating
+		    console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings);
+		    console.log("Country: " + JSON.parse(body).Country);
+		    console.log("Language: " + JSON.parse(body).Language);
+		    console.log("Plot: " + JSON.parse(body).Plot);
+		    console.log("Notable Actors: " + JSON.parse(body).Actors);
+		    console.log("<----------------------------------->");
+		}
+	});
+}
+//Function that patches together the users query/runs movieThis
+var patchMovie = function(){
 	//Initializes var where we will store the movie name
 	var movieName = "";
-
 	//Starts a for loop that will patch the movie name together with '+'s
 	for (var i = 3; i < nodeArgs.length; i++) {
 		//If there is more than one word in the movie title
@@ -31,45 +52,24 @@ if(nodeArgs[2] === "movie-this"){
 			//Patch together movie name, replacing spaces with '+'s
 			movieName = movieName + "+" + nodeArgs[i];
 		}
-	  	else{
-	   		movieName += nodeArgs[i];
-	  	}
-	}
-	//Creates a query URL based on movie name we just created
-	var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
-
-	//Using request package, pull the .json response from the OMDB API URL we created 
-	request(queryUrl, function(error, response, body) {
-	  	// If the request is successful
-	  	if (!error && response.statusCode === 200) {
-	  		console.log("<----------------------------------->");
-	    	console.log("Movie Title: " + JSON.parse(body).Title);
-	    	console.log("Year Released: " + JSON.parse(body).Year);
-	    	console.log("IMDB Rating: " + JSON.parse(body).imdbRating);
-	    	//Need to query the array within database to get rotten tomatoes rating
-	    	console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings);
-	    	console.log("Country: " + JSON.parse(body).Country);
-	    	console.log("Language: " + JSON.parse(body).Language);
-	    	console.log("Plot: " + JSON.parse(body).Plot);
-	    	console.log("Notable Actors: " + JSON.parse(body).Actors);
-	    	console.log("<----------------------------------->");
+		else{
+		   	movieName += nodeArgs[i];
 		}
-	});
+	}
+	movieThis(movieName);
 }
-
-//If my-tweets is the third argument in command line
-if(process.argv[2] === "my-tweets"){
+//myTweets function
+var myTweets = function(){
 	//Use the Twitter client to get tweets from my timeline
 	client.get("https://api.twitter.com/1.1/statuses/user_timeline.json", function(error, tweets, response) {
 		if(error) throw error;//if err show error message
 		//For each tweet
   		for(var i=0;i<tweets.length;i++){
-  			//log the tweet
+  			//Log the tweet
   			console.log("Tweet "+(i+1)+": "+tweets[i].text)
   		};  
 	});
 }
-
 //spotifyThisSong function
 var spotifyThisSong = function(song){
 	//Query the Spotify API
@@ -86,9 +86,8 @@ var spotifyThisSong = function(song){
 			console.log(err);
 		});
 }
-
-//If spotify-this-song is the command
-if(nodeArgs[2] === "spotify-this-song"){
+//Function that patches together the users query/runs spotifyThisSong
+var patchSong = function(){
 	var songTitle = "";
 	//Starts a for loop that will patch the song title together with ' 's
 	for (var i = 3; i < nodeArgs.length; i++) {
@@ -103,9 +102,8 @@ if(nodeArgs[2] === "spotify-this-song"){
 	}
 	spotifyThisSong(songTitle); //Spotify the song
 }
-
-//If do-what-it-says is the command
-if(nodeArgs[2] === "do-what-it-says"){
+//doWhatItSaysCommand function
+var doWhatItSaysCommand= function(){
 	//Use file system to read random.txt
 	fs.readFile("random.txt", "utf8", function(error, data){
 		var commands = data.split(",");//Split the commands from the .txt files
@@ -131,3 +129,28 @@ if(nodeArgs[2] === "do-what-it-says"){
 		}
 	});
 }
+//Pick which function to executed
+var pickFunction = function(command){
+	switch(command){
+		case "movie-this":
+			patchMovie();
+			break;
+		case "my-tweets":
+			myTweets();
+			break;
+		case "spotify-this-song":
+			patchSong();
+			break;
+		case "do-what-it-says":
+			doWhatItSaysCommand();
+			break;
+		default: 
+			console.log("Liri doesn't know that");
+
+	}
+}
+//Run the program
+var run = function(argOne){
+	pickFunction(argOne);
+}
+run(nodeArgs[2]);
